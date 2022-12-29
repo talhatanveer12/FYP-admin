@@ -3,6 +3,7 @@ import ProductStat from "../models/ProductStat.js";
 import User from "../models/User.js";
 import Transaction from "../models/Transaction.js";
 import getCountryIso3 from "country-iso-2-to-3";
+import Category from "../models/Category.js";
 
 export const getProducts = async (req, res) => {
   try {
@@ -21,6 +22,15 @@ export const getProducts = async (req, res) => {
     );
 
     res.status(200).json(productsWithStats);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
+
+export const getCategory = async (req, res) => {
+  const category = await Category.find();
+  try {
+    res.status(200).json({ data: category, status: "ok" });
   } catch (error) {
     res.status(404).json({ message: error.message });
   }
