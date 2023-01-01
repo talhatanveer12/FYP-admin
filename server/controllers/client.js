@@ -4,6 +4,7 @@ import User from "../models/User.js";
 import Transaction from "../models/Transaction.js";
 import getCountryIso3 from "country-iso-2-to-3";
 import Category from "../models/Category.js";
+import Brand from "../models/Brand.js";
 
 export const getProducts = async (req, res) => {
   try {
@@ -27,10 +28,86 @@ export const getProducts = async (req, res) => {
   }
 };
 
+export const createProducts = async (req, res) => {
+  const product = new Product({
+    name: req.body.name,
+    description: req.body.description,
+    price: req.body.price,
+    category: req.body.category,
+    branch: req.body.brands,
+    supply: req.body.stock,
+  });
+
+  try {
+    await product.save();
+    res.status(200).json("Creating Successfully");
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
+
+export const updateProducts = async (req, res) => {
+  const product = new Product({
+    name: req.body.name,
+    description: req.body.description,
+    price: req.body.price,
+    category: req.body.category,
+    branch: req.body.brands,
+    supply: req.body.stock,
+  });
+
+  try {
+    await Product.findByIdAndUpdate(req.params.id, {
+      name: req.body.name,
+      description: req.body.description,
+      price: req.body.price,
+      category: req.body.category,
+      branch: req.body.brands,
+      supply: req.body.stock,
+    });
+    res.status(200).json("updating Successfully");
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
+
 export const getCategory = async (req, res) => {
   const category = await Category.find();
   try {
-    res.status(200).json({ data: category, status: "ok" });
+    res.status(200).json(category);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
+
+export const getBrand = async (req, res) => {
+  const brand = await Brand.find();
+  try {
+    res.status(200).json(brand);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
+
+export const postCategory = async (req, res) => {
+  const category = new Category({
+    name: "Abc",
+  });
+  try {
+    await category.save();
+    res.status(200).json("Creating Successfully");
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
+
+export const postBrand = async (req, res) => {
+  const brand = new Brand({
+    name: req.body.name,
+  });
+  try {
+    await brand.save();
+    res.status(200).json("Creating Successfully");
   } catch (error) {
     res.status(404).json({ message: error.message });
   }
