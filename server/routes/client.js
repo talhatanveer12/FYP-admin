@@ -10,6 +10,7 @@ import {
   postBrand,
   createProducts,
   updateProducts,
+  deleteProduct,
 } from "../controllers/client.js";
 
 const router = express.Router();
@@ -17,6 +18,7 @@ const router = express.Router();
 router.get("/products", getProducts);
 router.post("/products", createProducts);
 router.post("/products/:id", updateProducts);
+router.delete("/products/:id",deleteProduct);
 router.get("/category", getCategory);
 router.post("/category", postCategory);
 router.get("/brand", getBrand);

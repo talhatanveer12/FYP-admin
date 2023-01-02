@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
+
 
 const UserSchema = new mongoose.Schema(
   {
@@ -27,12 +29,19 @@ const UserSchema = new mongoose.Schema(
     transactions: Array,
     role: {
       type: String,
-      enum: ["user", "admin", "superadmin"],
+      enum: ["sale_manager", "admin", "accountant"],
       default: "admin",
     },
   },
   { timestamps: true }
 );
+UserSchema.methods.generateAuthToken = function () {
+  const token = jwt.sign(
+    { _id: this._id, role: this.role },
+    process.env.PRIVATEKEY
+  );
+  return token;
+};
 
 const User = mongoose.model("User", UserSchema);
 export default User;

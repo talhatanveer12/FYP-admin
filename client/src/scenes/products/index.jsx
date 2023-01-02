@@ -92,9 +92,19 @@ const Product = ({
     );
     const data = await response.json();
     console.log(data);
+    setOpen(false);
   };
 
-  const deleteHandle = (_id) => {};
+  const deleteHandle = async (_id) => {
+    const response = await fetch(
+      `http://localhost:5001/client/products/${_id}`,
+      {
+        method: "DELETE",
+      }
+    );
+    const data = await response.json();
+    console.log(data);
+  };
 
   const setData = (name, _id, description, price, category, supply) => {
     setName(name);
@@ -185,7 +195,7 @@ const Product = ({
         </Collapse>
         <div>
           <Dialog open={open} onClose={handleClose}>
-            <DialogTitle>Add Product</DialogTitle>
+            <DialogTitle>updateProduct Product</DialogTitle>
             <DialogContent>
               <TextField
                 autoFocus
@@ -292,8 +302,8 @@ const Product = ({
               />
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleClose}>Cancel</Button>
-              <Button onClick={submitHandle}>Create</Button>
+              <Button onClick={handleClose} variant="contained" color="error">Cancel</Button>
+              <Button onClick={submitHandle} variant="contained" color="success">Create</Button>
             </DialogActions>
           </Dialog>
         </div>
@@ -330,7 +340,7 @@ const Products = () => {
     });
     const data = await response.json();
     console.log(data);
-    console.log({ name, description, category, brands, stock, price });
+    setOpen(false);
   };
 
   const { data, isLoading } = useGetProductsQuery();
@@ -509,8 +519,8 @@ const Products = () => {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleClose}>Cancel</Button>
-            <Button onClick={submitHandle}>Create</Button>
+            <Button onClick={handleClose} variant="contained" color="error">Cancel</Button>
+            <Button onClick={submitHandle} variant="contained" color="success">Create</Button>
           </DialogActions>
         </Dialog>
       </div>

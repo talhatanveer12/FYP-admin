@@ -32,6 +32,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import FlexBetween from "./FlexBetween";
 import profileImage from "assets/profile.jpeg";
+import { useTranslation } from 'react-i18next';
 
 const navItems = [
   {
@@ -103,6 +104,7 @@ const Sidebar = ({
   const [active, setActive] = useState("");
   const navigate = useNavigate();
   const theme = useTheme();
+  const { t } = useTranslation();
 
   useEffect(() => {
     setActive(pathname.substring(1));

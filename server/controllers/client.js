@@ -47,14 +47,14 @@ export const createProducts = async (req, res) => {
 };
 
 export const updateProducts = async (req, res) => {
-  const product = new Product({
-    name: req.body.name,
-    description: req.body.description,
-    price: req.body.price,
-    category: req.body.category,
-    branch: req.body.brands,
-    supply: req.body.stock,
-  });
+  // const product = new Product({
+  //   name: req.body.name,
+  //   description: req.body.description,
+  //   price: req.body.price,
+  //   category: req.body.category,
+  //   branch: req.body.brands,
+  //   supply: req.body.stock,
+  // });
 
   try {
     await Product.findByIdAndUpdate(req.params.id, {
@@ -70,6 +70,15 @@ export const updateProducts = async (req, res) => {
     res.status(404).json({ message: error.message });
   }
 };
+
+export const deleteProduct = async (req,res) => {
+  try {
+    await Product.findByIdAndDelete(req.params.id);
+    res.status(200).json("deleting Successfully");
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+}
 
 export const getCategory = async (req, res) => {
   const category = await Category.find();

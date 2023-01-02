@@ -1,3 +1,4 @@
+import React from "react";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { createTheme } from "@mui/material/styles";
 import { useMemo } from "react";
@@ -16,9 +17,16 @@ import Monthly from "scenes/monthly";
 import Breakdown from "scenes/breakdown";
 import Admin from "scenes/admin";
 import Performance from "scenes/performance";
+import VerifyUser from "pages/Auth/VerifyUser";
+import Login from "pages/Auth/Login";
+import { useTranslation } from 'react-i18next';
+import i18next from 'i18next';
+//import * as locales from '@mui/material/locale';
 
 function App() {
   const mode = useSelector((state) => state.global.mode);
+  i18next.changeLanguage('ko-KR');
+  // const [locale, setLocale] = React.useState('zhCN');
   const theme = useMemo(() => createTheme(themeSettings(mode)), [mode]);
   return (
     <div className="app">
@@ -26,8 +34,9 @@ function App() {
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <Routes>
-            <Route element={<Layout />}>
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/Login" element={<Login />} />
+            <Route element={<VerifyUser><Layout /></VerifyUser>}>
+              <Route path="/" element={<Dashboard />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/products" element={<Products />} />
               <Route path="/customers" element={<Customers />} />
