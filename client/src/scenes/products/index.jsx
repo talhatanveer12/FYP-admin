@@ -21,6 +21,8 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
+import ImageList from "@mui/material/ImageList";
+import ImageListItem from "@mui/material/ImageListItem";
 
 import Header from "components/Header";
 import {
@@ -30,6 +32,8 @@ import {
   useCreateProductsQuery,
 } from "state/api";
 import { useEffect } from "react";
+import axios from "axios";
+import { axiosFileInstance } from "Http-Request/axios-instance";
 
 const Product = ({
   _id,
@@ -40,6 +44,7 @@ const Product = ({
   category,
   supply,
   stat,
+  productImage
 }) => {
   const theme = useTheme();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -126,23 +131,42 @@ const Product = ({
         }}
       >
         <CardContent>
-          <Typography
-            sx={{ fontSize: 14 }}
-            color={theme.palette.secondary[700]}
-            gutterBottom
+          <Box
+            display="flex"
+            flexDirection="row"
+            justifyContent="space-between"
           >
-            {category}
-          </Typography>
-          <Typography variant="h5" component="div">
-            {name}
-          </Typography>
-          <Typography
-            sx={{ mb: "1.5rem" }}
-            color={theme.palette.secondary[400]}
-          >
-            ${Number(price).toFixed(2)}
-          </Typography>
-
+            <Box>
+              <Typography
+                sx={{ fontSize: 14 }}
+                color={theme.palette.secondary[700]}
+                gutterBottom
+              >
+                {category}
+              </Typography>
+              <Typography variant="h5" component="div">
+                {name}
+              </Typography>
+              <Typography
+                sx={{ mb: "1.5rem" }}
+                color={theme.palette.secondary[400]}
+              >
+                {Number(price).toFixed(2)} Rs
+              </Typography>
+            </Box>
+            <Box>
+              <ImageList sx={{ width: 80, height: 80 }} cols={1}>
+                <ImageListItem>
+                  <img
+                    src={productImage ? `http://localhost:5001/images/${productImage}` : "https://static.vecteezy.com/packs/media/vectors/term-bg-1-3d6355ab.jpg"}
+                    srcSet={productImage ? `http://localhost:5001/images/${productImage}` : "https://static.vecteezy.com/packs/media/vectors/term-bg-1-3d6355ab.jpg"}
+                    alt="Not Found"
+                    loading="lazy"
+                  />
+                </ImageListItem>
+              </ImageList>
+            </Box>
+          </Box>
           <Typography variant="body2">{description}</Typography>
         </CardContent>
         <CardActions>
@@ -302,8 +326,16 @@ const Product = ({
               />
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleClose} variant="contained" color="error">Cancel</Button>
-              <Button onClick={submitHandle} variant="contained" color="success">Create</Button>
+              <Button onClick={handleClose} variant="contained" color="error">
+                Cancel
+              </Button>
+              <Button
+                onClick={submitHandle}
+                variant="contained"
+                color="success"
+              >
+                Create
+              </Button>
             </DialogActions>
           </Dialog>
         </div>
@@ -318,6 +350,7 @@ const Products = () => {
   const [description, setDescription] = useState("");
   const [brands, setBrand] = useState("");
   const [category, setCategory] = useState("");
+  const [image, setImage] = useState();
   const [stock, setStock] = useState(0);
   const [price, setPrice] = useState(0);
   //const [category, setCategory] = React.useState([]);
@@ -330,16 +363,20 @@ const Products = () => {
   };
 
   const submitHandle = async () => {
-    const prod = { name, description, category, brands, stock, price };
-    const response = await fetch("http://localhost:5001/client/products", {
-      method: "POST",
-      body: JSON.stringify(prod),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const data = await response.json();
-    console.log(data);
+    const data = new FormData();
+    data.append("image", image);
+    data.append("name", name);
+    data.append("description", description);
+    data.append("category", category);
+    data.append("brands", brands);
+    data.append("stock", stock);
+    data.append("price", price);
+    const response = await axiosFileInstance.post(
+      "client/products",
+      data
+    );
+    const data2 = await response.json();
+    console.log(data2);
     setOpen(false);
   };
 
@@ -348,8 +385,6 @@ const Products = () => {
   const brand = useGetBrandsQuery();
 
   const isNonMobile = useMediaQuery("(min-width: 1000px)");
-  console.log(data, "erererer");
-  console.log(result.data, "uuuuu");
   //setCategory(result.data);
   return (
     <>
@@ -391,6 +426,7 @@ const Products = () => {
                 category,
                 supply,
                 stat,
+                image
               }) => (
                 <Product
                   key={_id}
@@ -402,6 +438,7 @@ const Products = () => {
                   category={category}
                   supply={supply}
                   stat={stat}
+                  productImage={image}
                 />
               )
             )}
@@ -414,6 +451,45 @@ const Products = () => {
         <Dialog open={open} onClose={handleClose}>
           <DialogTitle>Add Product</DialogTitle>
           <DialogContent>
+            <Box
+              height="160px"
+              width="160px"
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                position: "relative",
+                margin: "auto",
+                color: "white",
+                borderRadius: "50%",
+                padding: "0.2rem 0.5rem",
+              }}
+            >
+              <label htmlFor="profile" style={{ display: "inline" }}>
+                <img
+                  style={{
+                    objectFit: "cover",
+                    cursor: "pointer",
+                  }}
+                  width="160px"
+                  height="160px"
+                  alt="user"
+                  src={
+                    image
+                      ? URL.createObjectURL(image)
+                      : "https://static.vecteezy.com/packs/media/vectors/term-bg-1-3d6355ab.jpg"
+                  }
+                />
+              </label>
+              <input
+                type="file"
+                id="profile"
+                name="profile"
+                style={{ display: "none", cursor: "pointer" }}
+                onChange={(e) => {
+                  setImage(e.target.files[0]);
+                }}
+              />
+            </Box>
             <TextField
               autoFocus
               margin="dense"
@@ -428,6 +504,7 @@ const Products = () => {
               fullWidth
               variant="standard"
             />
+
             <TextField
               autoFocus
               margin="dense"
@@ -519,8 +596,12 @@ const Products = () => {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleClose} variant="contained" color="error">Cancel</Button>
-            <Button onClick={submitHandle} variant="contained" color="success">Create</Button>
+            <Button onClick={handleClose} variant="contained" color="error">
+              Cancel
+            </Button>
+            <Button onClick={submitHandle} variant="contained" color="success">
+              Create
+            </Button>
           </DialogActions>
         </Dialog>
       </div>

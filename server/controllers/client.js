@@ -5,6 +5,12 @@ import Transaction from "../models/Transaction.js";
 import getCountryIso3 from "country-iso-2-to-3";
 import Category from "../models/Category.js";
 import Brand from "../models/Brand.js";
+import fs from "fs";
+import { promisify } from "util";
+
+const unlinkAsync = promisify(fs.unlink);
+
+
 
 export const getProducts = async (req, res) => {
   try {
@@ -33,6 +39,7 @@ export const createProducts = async (req, res) => {
     name: req.body.name,
     description: req.body.description,
     price: req.body.price,
+    image: req.file?.filename,
     category: req.body.category,
     branch: req.body.brands,
     supply: req.body.stock,
@@ -71,14 +78,14 @@ export const updateProducts = async (req, res) => {
   }
 };
 
-export const deleteProduct = async (req,res) => {
+export const deleteProduct = async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);
     res.status(200).json("deleting Successfully");
   } catch (error) {
     res.status(404).json({ message: error.message });
   }
-}
+};
 
 export const getCategory = async (req, res) => {
   const category = await Category.find();

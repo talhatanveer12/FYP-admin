@@ -1,4 +1,4 @@
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 
 
 function auth(req,res,next) {
@@ -15,4 +15,4 @@ function auth(req,res,next) {
     
 }
 
-module.exports = auth;
+export default auth;

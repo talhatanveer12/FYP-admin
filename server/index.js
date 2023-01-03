@@ -34,9 +34,11 @@ app.use(express.json());
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json({limit: "90mb", extended: false }));
+app.use(bodyParser.urlencoded({limit: "90mb", extended: false }));
 app.use(cors());
+app.use(express.urlencoded({limit: "90mb", extended: true }));
+app.use("/images", express.static("public/images"));
 
 /* ROUTES */
 app.use("/auth",authRoutes);

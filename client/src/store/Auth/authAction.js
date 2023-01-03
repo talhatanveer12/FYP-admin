@@ -5,7 +5,7 @@ export const loginUser = (data) => async (dispatch) => {
   try {
     const res = await axiosInstance.post("/auth/login", data);
     if (res.data.status === "Login") {
-      dispatch(login({ token: res.data.token}));
+      dispatch(login({ token: res.data.token,user: res.data.user}));
     }
     return res;
   } catch (error) {

@@ -12,3 +12,12 @@ const axiosInstance = axios.create({
 
 export default axiosInstance;
 
+export const axiosFileInstance = axios.create({
+  baseURL: "http://localhost:5001/",
+  headers: {
+    "Content-Type": "multipart/form-data",
+    "Accept": "application/json",
+    "x-auth-token": token ? token : "",
+  },
+});
+

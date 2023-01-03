@@ -29,7 +29,7 @@ const UserSchema = new mongoose.Schema(
     transactions: Array,
     role: {
       type: String,
-      enum: ["sale_manager", "admin", "accountant"],
+      enum: ["sale_manager", "admin", "accountant","user"],
       default: "admin",
     },
   },

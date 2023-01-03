@@ -70,3 +70,8 @@ export const deleteUser = async (req, res) => {
     res.status(404).json({ message: error.message });
   }
 };
+
+export const UserMe = async (req, res) => {
+    const user = await User.findById(req.user._id).select("-password");
+    res.send(user);
+  };
