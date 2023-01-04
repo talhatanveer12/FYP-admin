@@ -11,6 +11,8 @@ import {
   createProducts,
   updateProducts,
   deleteProduct,
+  createInvoice,
+  getInvoice,
 } from "../controllers/client.js";
 import multer from "multer";
 
@@ -33,12 +35,14 @@ const upload = multer({ storage: storage });
 
 router.get("/products", getProducts);
 router.post("/products",upload.single("image"), createProducts);
-router.post("/products/:id", updateProducts);
+router.post("/products/:id",upload.single("image"), updateProducts);
 router.delete("/products/:id",deleteProduct);
 router.get("/category", getCategory);
 router.post("/category", postCategory);
 router.get("/brand", getBrand);
 router.post("/brand", postBrand);
+router.get("/invoice",getInvoice);
+router.post("/invoice",createInvoice);
 router.get("/customers", getCustomers);
 router.get("/transactions", getTransactions);
 router.get("/geography", getGeography);

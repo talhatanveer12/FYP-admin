@@ -12,12 +12,14 @@ import themeSlice from "store/Theme/themeSlice";
 
 import './i18n';
 import * as serviceWorker from './serviceWorker';
+import adminSlice from "store/Admin/adminSlice";
 
 
 const store = configureStore({
   reducer: {
     Theme: themeSlice.reducer,
     Auth: authSlice.reducer,
+    Admin: adminSlice.reducer,
     global: globalReducer,
     [api.reducerPath]: api.reducer,
   },

@@ -7,6 +7,7 @@ import Category from "../models/Category.js";
 import Brand from "../models/Brand.js";
 import fs from "fs";
 import { promisify } from "util";
+import Invoice from "../models/Invoice.js";
 
 const unlinkAsync = promisify(fs.unlink);
 
@@ -62,12 +63,17 @@ export const updateProducts = async (req, res) => {
   //   branch: req.body.brands,
   //   supply: req.body.stock,
   // });
+  const imageDelete = await Product.findById(req.params.id);
+    if (req.file?.filename) {
+      await unlinkAsync(`public/images/${imageDelete?.image}`);
+    }
 
   try {
     await Product.findByIdAndUpdate(req.params.id, {
       name: req.body.name,
       description: req.body.description,
       price: req.body.price,
+      image: req.file?.filename,
       category: req.body.category,
       branch: req.body.brands,
       supply: req.body.stock,
@@ -123,6 +129,37 @@ export const postBrand = async (req, res) => {
   });
   try {
     await brand.save();
+    res.status(200).json("Creating Successfully");
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
+
+export const getInvoice = async (req, res) => {
+  const invoice = await Invoice.find();
+  try {
+    res.status(200).json(invoice);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
+
+export const createInvoice = async (req, res) => {
+  const prod = await Product.findById(req.body.products);
+  const total = prod.supply - req.body.quantity;
+
+  await Product.findByIdAndUpdate(req.body.products, {
+    supply: total,
+  });
+
+  const invoice = new Invoice({
+    userId: req.body.userId,
+    totalAmount: req.body.totalAmount,
+    quantity: req.body.quantity,
+    products: req.body.products,
+  });
+  try {
+    await invoice.save();
     res.status(200).json("Creating Successfully");
   } catch (error) {
     res.status(404).json({ message: error.message });

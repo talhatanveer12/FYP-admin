@@ -1,4 +1,4 @@
-import React,{useState} from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Button, useTheme } from "@mui/material";
 import { useGetAdminsQuery } from "state/api";
 import { DataGrid } from "@mui/x-data-grid";
@@ -14,10 +14,14 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
+import { useDispatch, useSelector } from "react-redux";
+import { getUserAdmin } from "store/Admin/adminAction";
+import axiosInstance from "Http-Request/axios-instance";
+import Swal from "sweetalert2";
 
 const Admin = () => {
   const theme = useTheme();
-  const { data, isLoading } = useGetAdminsQuery();
+  //const { data, isLoading } = useGetAdminsQuery();
   const [open, setOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [name, setName] = useState("");
@@ -26,7 +30,11 @@ const Admin = () => {
   const [occupation, setOccupation] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [id,setId] = useState('');
+  const [id, setId] = useState("");
+  const dispatch = useDispatch();
+
+  const { adminUser } = useSelector((state) => state.Admin);
+
   //const [category, setCategory] = React.useState([]);
   const handleClickOpen = () => {
     setOpen(true);
@@ -47,43 +55,69 @@ const Admin = () => {
   };
 
   const submitHandle = async () => {
-    const prod = { name, email, role, password, phoneNumber: phone, occupation };
-    const response = await fetch("http://localhost:5001/auth/register", {
-      method: "POST",
-      body: JSON.stringify(prod),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const data = await response.json();
-    console.log(data);
-    setOpen(false);
-  }
+    const data = new FormData();
+    data.append("name", name);
+    data.append("email", email);
+    data.append("role", role);
+    data.append("password", password);
+    data.append("phoneNumber", phone);
+    data.append("occupation", occupation);
+    const response = await axiosInstance.post("/auth/register", data);
+    if (response.status === 200) {
+      setOpen(false);
+      Swal.fire({
+        text: "Create Admin User Successfully",
+        icon: "success",
+      });
+      dispatch(getUserAdmin());
+      setName('');
+      setEmail('');
+      setPhone('');
+      setOccupation("");
+      setRole("");
+    }
+  };
 
   const deleteHandle = async (_id) => {
-    const response = await fetch(
-      `http://localhost:5001/auth/delete/${_id}`,
-      {
-        method: "DELETE",
-      }
-    );
-    const data = await response.json();
-    console.log(data);
+    const response = await axiosInstance.delete(`/auth/delete/${_id}`);
+    if (response.status === 200) {
+      setOpen(false);
+      Swal.fire({
+        text: "Delete Admin User Successfully",
+        icon: "success",
+      });
+      dispatch(getUserAdmin());
+    }
   };
 
   const submitEditHandle = async () => {
-    const prod = { name, email, role, phoneNumber: phone, occupation };
-    const response = await fetch(`http://localhost:5001/auth/update/${id}`, {
-      method: "POST",
-      body: JSON.stringify(prod),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const data = await response.json();
-    console.log(data);
-    setEditOpen(false);
-  }
+    const data = new FormData();
+    data.append("name", name);
+    data.append("email", email);
+    data.append("role", role);
+    data.append("phoneNumber", phone);
+    data.append("occupation", occupation);
+    const response = await axiosInstance.post(`/auth/update/${id}`,data);
+    if (response.status === 200) {
+      setEditOpen(false);
+      Swal.fire({
+        text: "Delete Admin User Successfully",
+        icon: "success",
+      });
+      dispatch(getUserAdmin());
+      // setName('');
+      // setEmail('');
+      // setPhone('');
+      // setOccupation("");
+      // setRole("");
+    }
+
+    
+  };
+
+  useEffect(() => {
+    dispatch(getUserAdmin());
+  }, [dispatch]);
 
   const columns = [
     {
@@ -113,6 +147,9 @@ const Admin = () => {
       field: "role",
       headerName: "Role",
       flex: 0.5,
+      renderCell: (params) => {
+        return params.value === "sale_manager" ? "Sale Manager" : params.value;
+      },
     },
     {
       field: "_id",
@@ -126,12 +163,25 @@ const Admin = () => {
               color="secondary"
               sx={{ marginRight: "4px" }}
               onClick={() => {
-              setData(params.row.name, params.row._id, params.row.role, params.row.occupation, params.row.email, params.row.phoneNumber);
-            }}
+                setData(
+                  params.row.name,
+                  params.row._id,
+                  params.row.role,
+                  params.row.occupation,
+                  params.row.email,
+                  params.row.phoneNumber
+                );
+              }}
             >
               Edit
             </Button>
-            <Button variant="contained" color="error" onClick={() => {deleteHandle(params.row._id)}}>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => {
+                deleteHandle(params.row._id);
+              }}
+            >
               Delete
             </Button>
           </>
@@ -142,59 +192,62 @@ const Admin = () => {
 
   return (
     <>
-    <Box m="1.5rem 2.5rem">
-      <Box display="flex" justifyContent="space-between">
-        <Header title="ADMINS" subtitle="Managing admins and list of admins" />
-        <Button
-          variant="contained"
-          color="success"
-          size="small"
-          sx={{ fontWeight: "bold", height: "45px" }}
-          onClick={handleClickOpen}
+      <Box m="1.5rem 2.5rem">
+        <Box display="flex" justifyContent="space-between">
+          <Header
+            title="ADMINS"
+            subtitle="Managing admins and list of admins"
+          />
+          <Button
+            variant="contained"
+            color="success"
+            size="small"
+            sx={{ fontWeight: "bold", height: "45px" }}
+            onClick={handleClickOpen}
+          >
+            Add User
+          </Button>
+        </Box>
+        <Box
+          mt="40px"
+          height="75vh"
+          sx={{
+            "& .MuiDataGrid-root": {
+              border: "none",
+            },
+            "& .MuiDataGrid-cell": {
+              borderBottom: "none",
+            },
+            "& .MuiDataGrid-columnHeaders": {
+              backgroundColor: theme.palette.background.alt,
+              color: theme.palette.secondary[100],
+              borderBottom: "none",
+            },
+            "& .MuiDataGrid-virtualScroller": {
+              backgroundColor: theme.palette.primary.light,
+            },
+            "& .MuiDataGrid-footerContainer": {
+              backgroundColor: theme.palette.background.alt,
+              color: theme.palette.secondary[100],
+              borderTop: "none",
+            },
+            "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
+              color: `${theme.palette.secondary[200]} !important`,
+            },
+          }}
         >
-          Add User
-        </Button>
+          <DataGrid
+            loading={!adminUser}
+            getRowId={(row) => row._id}
+            rows={adminUser || []}
+            columns={columns}
+            // components={{
+            //   ColumnMenu: CustomColumnMenu,
+            // }}
+          />
+        </Box>
       </Box>
-      <Box
-        mt="40px"
-        height="75vh"
-        sx={{
-          "& .MuiDataGrid-root": {
-            border: "none",
-          },
-          "& .MuiDataGrid-cell": {
-            borderBottom: "none",
-          },
-          "& .MuiDataGrid-columnHeaders": {
-            backgroundColor: theme.palette.background.alt,
-            color: theme.palette.secondary[100],
-            borderBottom: "none",
-          },
-          "& .MuiDataGrid-virtualScroller": {
-            backgroundColor: theme.palette.primary.light,
-          },
-          "& .MuiDataGrid-footerContainer": {
-            backgroundColor: theme.palette.background.alt,
-            color: theme.palette.secondary[100],
-            borderTop: "none",
-          },
-          "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
-            color: `${theme.palette.secondary[200]} !important`,
-          },
-        }}
-      >
-        <DataGrid
-          loading={isLoading || !data}
-          getRowId={(row) => row._id}
-          rows={data || []}
-          columns={columns}
-          // components={{
-          //   ColumnMenu: CustomColumnMenu,
-          // }}
-        />
-      </Box>
-    </Box>
-    <div>
+      <div>
         <Dialog open={open} onClose={handleClose}>
           <DialogTitle>Add User</DialogTitle>
           <DialogContent>
@@ -257,9 +310,9 @@ const Admin = () => {
                 <MenuItem value="">
                   <em>None</em>
                 </MenuItem>
-                 <MenuItem value="admin">Admin</MenuItem>
-                 <MenuItem value="sale_manager">Sale Manager</MenuItem>
-                 <MenuItem value="accountant">Accountant</MenuItem>
+                <MenuItem value="admin">Admin</MenuItem>
+                <MenuItem value="sale_manager">Sale Manager</MenuItem>
+                <MenuItem value="accountant">Accountant</MenuItem>
               </Select>
             </FormControl>
             <TextField
@@ -290,13 +343,22 @@ const Admin = () => {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleClose} variant="contained" color="error">Cancel</Button>
-            <Button onClick={submitHandle} variant="contained" color="success">Create</Button>
+            <Button onClick={handleClose} variant="contained" color="error">
+              Cancel
+            </Button>
+            <Button onClick={submitHandle} variant="contained" color="success">
+              Create
+            </Button>
           </DialogActions>
         </Dialog>
       </div>
       <div>
-        <Dialog open={editOpen} onClose={() => {setEditOpen(true)}}>
+        <Dialog
+          open={editOpen}
+          onClose={() => {
+            setEditOpen(true);
+          }}
+        >
           <DialogTitle>Update User</DialogTitle>
           <DialogContent>
             <TextField
@@ -316,7 +378,7 @@ const Admin = () => {
             <TextField
               autoFocus
               margin="dense"
-              id="email"
+              id="emailyy"
               label="Email"
               value={email}
               onChange={(e) => {
@@ -358,9 +420,9 @@ const Admin = () => {
                 <MenuItem value="">
                   <em>None</em>
                 </MenuItem>
-                 <MenuItem value="admin">Admin</MenuItem>
-                 <MenuItem value="sale_manager">Sale Manager</MenuItem>
-                 <MenuItem value="accountant">Accountant</MenuItem>
+                <MenuItem value="admin">Admin</MenuItem>
+                <MenuItem value="sale_manager">Sale Manager</MenuItem>
+                <MenuItem value="accountant">Accountant</MenuItem>
               </Select>
             </FormControl>
             <TextField
@@ -378,8 +440,22 @@ const Admin = () => {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => {setEditOpen(false)}} variant="contained" color="error">Cancel</Button>
-            <Button onClick={submitEditHandle} variant="contained" color="success">Update</Button>
+            <Button
+              onClick={() => {
+                setEditOpen(false);
+              }}
+              variant="contained"
+              color="error"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={submitEditHandle}
+              variant="contained"
+              color="success"
+            >
+              Update
+            </Button>
           </DialogActions>
         </Dialog>
       </div>

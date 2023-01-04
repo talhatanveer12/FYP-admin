@@ -23,6 +23,8 @@ import { useTranslation } from 'react-i18next';
 import i18next from 'i18next';
 import { useEffect } from "react";
 import { loadUser } from "store/Auth/authAction";
+import Ledger from "scenes/ledger";
+import Invoice from "scenes/invoice";
 //import * as locales from '@mui/material/locale';
 
 function App() {
@@ -52,6 +54,8 @@ function App() {
               <Route path="/transactions" element={<Transactions />} />
               <Route path="/geography" element={<Geography />} />
               <Route path="/overview" element={<Overview />} />
+              <Route path="/ledger" element={<Ledger />} />
+              <Route path="/invoice" element={<Invoice />} />
               <Route path="/daily" element={<Daily />} />
               <Route path="/monthly" element={<Monthly />} />
               <Route path="/breakdown" element={<Breakdown />} />

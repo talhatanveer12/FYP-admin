@@ -55,6 +55,14 @@ const navItems = [
     text: "Transactions",
     icon: <ReceiptLongOutlined />,
   },
+  {
+    text: "Ledger",
+    icon: <ReceiptLongOutlined />,
+  },
+  {
+    text: "Invoice",
+    icon: <ReceiptLongOutlined />,
+  },
   // {
   //   text: "Geography",
   //   icon: <PublicOutlined />,

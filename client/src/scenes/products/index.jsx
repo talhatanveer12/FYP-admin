@@ -33,7 +33,10 @@ import {
 } from "state/api";
 import { useEffect } from "react";
 import axios from "axios";
-import { axiosFileInstance } from "Http-Request/axios-instance";
+import axiosInstance, { axiosFileInstance } from "Http-Request/axios-instance";
+import { useDispatch, useSelector } from "react-redux";
+import { getUserProduct } from "store/Admin/adminAction";
+import Swal from "sweetalert2";
 
 const Product = ({
   _id,
@@ -44,8 +47,10 @@ const Product = ({
   category,
   supply,
   stat,
-  productImage
+  productImage,
+  branch
 }) => {
+  const dispatch = useDispatch();
   const theme = useTheme();
   const [isExpanded, setIsExpanded] = useState(false);
   const [id, setId] = useState();
@@ -55,6 +60,8 @@ const Product = ({
   const [brands, setBrand] = useState("");
   const [p_category, setCategory] = useState("");
   const [p_stock, setStock] = useState(0);
+  const [p_image, setPImage] = useState();
+  const [image, setImage] = useState();
   const [p_price, setPrice] = useState(0);
 
   const result = useGetCategorysQuery();
@@ -69,55 +76,55 @@ const Product = ({
     setOpen(false);
   };
   const submitHandle = async () => {
-    console.log({
-      p_name,
-      p_description,
-      p_category,
-      brands,
-      p_stock,
-      p_price,
-    });
-    const prod = {
-      name: p_name,
-      description: p_description,
-      category: p_category,
-      brands: brands,
-      stock: p_stock,
-      price: p_price,
-    };
-    const response = await fetch(
-      `http://localhost:5001/client/products/${id}`,
-      {
-        method: "POST",
-        body: JSON.stringify(prod),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    const data = await response.json();
-    console.log(data);
-    setOpen(false);
+    const data = new FormData();
+    if(p_image)
+      data.append("image", p_image);
+    data.append("name", p_name);
+    data.append("description", p_description);
+    data.append("category", category);
+    data.append("brands", brands);
+    data.append("stock", p_stock);
+    data.append("price", p_price);
+    const response = await axiosFileInstance.post(`/client/products/${id}`, data);
+    if (response.status === 200) {
+      setOpen(false);
+      Swal.fire({
+        text: "Update Product Successfully",
+        icon: "success",
+      });
+      dispatch(getUserProduct());
+    }
   };
 
   const deleteHandle = async (_id) => {
-    const response = await fetch(
-      `http://localhost:5001/client/products/${_id}`,
-      {
-        method: "DELETE",
-      }
-    );
-    const data = await response.json();
-    console.log(data);
+    const response = await axiosInstance.delete(`/client/products/${_id}`);
+    if (response.status === 200) {
+      setOpen(false);
+      Swal.fire({
+        text: "delete Product Successfully",
+        icon: "success",
+      });
+      dispatch(getUserProduct());
+    }
   };
 
-  const setData = (name, _id, description, price, category, supply) => {
+  const setData = (
+    name,
+    _id,
+    description,
+    price,
+    category,
+    supply,
+    productImage
+  ) => {
     setName(name);
     setCategory(category);
     setPrice(price);
     setDescription(description);
     setStock(supply);
+    setImage(productImage);
     setOpen(true);
+    setBrand(branch);
     setId(_id);
   };
 
@@ -158,8 +165,16 @@ const Product = ({
               <ImageList sx={{ width: 80, height: 80 }} cols={1}>
                 <ImageListItem>
                   <img
-                    src={productImage ? `http://localhost:5001/images/${productImage}` : "https://static.vecteezy.com/packs/media/vectors/term-bg-1-3d6355ab.jpg"}
-                    srcSet={productImage ? `http://localhost:5001/images/${productImage}` : "https://static.vecteezy.com/packs/media/vectors/term-bg-1-3d6355ab.jpg"}
+                    src={
+                      productImage
+                        ? `http://localhost:5001/images/${productImage}`
+                        : "https://static.vecteezy.com/packs/media/vectors/term-bg-1-3d6355ab.jpg"
+                    }
+                    srcSet={
+                      productImage
+                        ? `http://localhost:5001/images/${productImage}`
+                        : "https://static.vecteezy.com/packs/media/vectors/term-bg-1-3d6355ab.jpg"
+                    }
                     alt="Not Found"
                     loading="lazy"
                   />
@@ -181,7 +196,16 @@ const Product = ({
             variant="contained"
             size="small"
             onClick={() => {
-              setData(name, _id, description, price, category, supply);
+              setData(
+                name,
+                _id,
+                description,
+                price,
+                category,
+                supply,
+                productImage,
+                branch
+              );
             }}
           >
             Edit
@@ -210,17 +234,56 @@ const Product = ({
             <Typography>id: {_id}</Typography>
             <Typography>Supply Left: {supply}</Typography>
             <Typography>
-              Yearly Sales This Year: {stat.yearlySalesTotal}
+              branch : {branch}
             </Typography>
-            <Typography>
+            {/* <Typography>
               Yearly Units Sold This Year: {stat.yearlyTotalSoldUnits}
-            </Typography>
+            </Typography> */}
           </CardContent>
         </Collapse>
         <div>
           <Dialog open={open} onClose={handleClose}>
             <DialogTitle>updateProduct Product</DialogTitle>
             <DialogContent>
+              <Box
+                height="160px"
+                width="160px"
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  position: "relative",
+                  margin: "auto",
+                  color: "white",
+                  borderRadius: "50%",
+                  padding: "0.2rem 0.5rem",
+                }}
+              >
+                <label htmlFor="profile" style={{ display: "inline" }}>
+                  <img
+                    style={{
+                      objectFit: "cover",
+                      cursor: "pointer",
+                    }}
+                    width="160px"
+                    height="160px"
+                    alt="user"
+                    src={
+                      image
+                        ? (p_image ? URL.createObjectURL(p_image) : `http://localhost:5001/images/${image}`)
+                        : "https://static.vecteezy.com/packs/media/vectors/term-bg-1-3d6355ab.jpg"
+                    }
+                  />
+                </label>
+                <input
+                  type="file"
+                  id="profile"
+                  name="profile"
+                  style={{ display: "none", cursor: "pointer" }}
+                  onChange={(e) => {
+                    setPImage(e.target.files[0]);
+                  }}
+                />
+              </Box>
               <TextField
                 autoFocus
                 margin="dense"
@@ -353,6 +416,8 @@ const Products = () => {
   const [image, setImage] = useState();
   const [stock, setStock] = useState(0);
   const [price, setPrice] = useState(0);
+  const dispatch = useDispatch();
+  const { product } = useSelector((state) => state.Admin);
   //const [category, setCategory] = React.useState([]);
   const handleClickOpen = () => {
     setOpen(true);
@@ -371,20 +436,26 @@ const Products = () => {
     data.append("brands", brands);
     data.append("stock", stock);
     data.append("price", price);
-    const response = await axiosFileInstance.post(
-      "client/products",
-      data
-    );
-    const data2 = await response.json();
-    console.log(data2);
-    setOpen(false);
+    const response = await axiosFileInstance.post("client/products", data);
+    if (response.status === 200) {
+      setOpen(false);
+      Swal.fire({
+        text: "Create Product Successfully",
+        icon: "success",
+      });
+      dispatch(getUserProduct());
+    }
   };
 
-  const { data, isLoading } = useGetProductsQuery();
+  //const { data, isLoading } = useGetProductsQuery();
   const result = useGetCategorysQuery();
   const brand = useGetBrandsQuery();
 
   const isNonMobile = useMediaQuery("(min-width: 1000px)");
+
+  useEffect(() => {
+    dispatch(getUserProduct());
+  }, [dispatch]);
   //setCategory(result.data);
   return (
     <>
@@ -404,7 +475,7 @@ const Products = () => {
             Add Product
           </Button>
         </Box>
-        {data || !isLoading ? (
+        {product ? (
           <Box
             mt="20px"
             display="grid"
@@ -416,7 +487,7 @@ const Products = () => {
               "& > div": { gridColumn: isNonMobile ? undefined : "span 4" },
             }}
           >
-            {data.map(
+            {product.map(
               ({
                 _id,
                 name,
@@ -426,7 +497,8 @@ const Products = () => {
                 category,
                 supply,
                 stat,
-                image
+                image,
+                branch
               }) => (
                 <Product
                   key={_id}
@@ -438,6 +510,7 @@ const Products = () => {
                   category={category}
                   supply={supply}
                   stat={stat}
+                  branch={branch}
                   productImage={image}
                 />
               )

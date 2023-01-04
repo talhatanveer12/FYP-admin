@@ -1,4 +1,4 @@
-import React,{useState} from "react";
+import React,{useEffect, useState} from "react";
 import { Box, Button, useTheme } from "@mui/material";
 import { useGetCustomersQuery } from "state/api";
 import Header from "components/Header";
@@ -8,11 +8,15 @@ import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
+import axiosInstance from "Http-Request/axios-instance";
+import Swal from "sweetalert2";
+import { useDispatch, useSelector } from "react-redux";
+import { getUserCustomer } from "store/Admin/adminAction";
 
 
 const Customers = () => {
   const theme = useTheme();
-  const { data, isLoading } = useGetCustomersQuery();
+  //const { data, isLoading } = useGetCustomersQuery();
   const [open, setOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [name, setName] = useState("");
@@ -20,6 +24,8 @@ const Customers = () => {
   const [occupation, setOccupation] = useState("");
   const [phone, setPhone] = useState("");
   const [id,setId] = useState('');
+  const dispatch = useDispatch();
+  const {customer} = useSelector((state) => state.Admin)
   //const [category, setCategory] = React.useState([]);
   const handleClickOpen = () => {
     setOpen(true);
@@ -39,42 +45,61 @@ const Customers = () => {
   };
 
   const submitHandle = async () => {
-    const prod = { name, email, role: "user", password: "12345678", phoneNumber: phone, occupation };
-    const response = await fetch("http://localhost:5001/auth/register", {
-      method: "POST",
-      body: JSON.stringify(prod),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const data = await response.json();
-    console.log(data);
-    setOpen(false);
+    const data = new FormData();
+    data.append("name", name);
+    data.append("email", email);
+    data.append("phoneNumber", phone);
+    data.append("password", "12345678");
+    data.append("role", "user");
+    data.append("occupation",occupation)
+    const response = await axiosInstance.post("/auth/register", data);
+    if (response.status === 200) {
+      setOpen(false);
+      Swal.fire({
+        text: "Create Customer Successfully",
+        icon: "success",
+      });
+      dispatch(getUserCustomer());
+    }
   }
 
   const deleteHandle = async (_id) => {
-    const response = await fetch(
-      `http://localhost:5001/auth/delete/${_id}`,
-      {
-        method: "DELETE",
-      }
-    );
-    const data = await response.json();
-    console.log(data);
+
+    const response = await axiosInstance.delete(`/auth/delete/${_id}`);
+    if (response.status === 200) {
+      setOpen(false);
+      Swal.fire({
+        text: "Delete Customer Successfully",
+        icon: "success",
+      });
+      dispatch(getUserCustomer());
+      setName('');
+      setEmail('');
+      setPhone('');
+      setOccupation("");
+    }
   };
 
   const submitEditHandle = async () => {
-    const prod = { name, email, phoneNumber: phone, occupation };
-    const response = await fetch(`http://localhost:5001/auth/update/${id}`, {
-      method: "POST",
-      body: JSON.stringify(prod),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const data = await response.json();
-    console.log(data);
-    setEditOpen(false);
+    const data = new FormData();
+    data.append("name", name);
+    data.append("email", email);
+    data.append("phoneNumber", phone);
+    data.append("occupation", occupation);
+    const response = await axiosInstance.post(`/auth/update/${id}`,data);
+    if (response.status === 200) {
+      setEditOpen(false);
+      Swal.fire({
+        text: "Update Customer Successfully",
+        icon: "success",
+      });
+      dispatch(getUserCustomer());
+      setName('');
+      setEmail('');
+      setPhone('');
+      setOccupation("");
+    }
+
   }
 
   const columns = [
@@ -132,6 +157,10 @@ const Customers = () => {
     },
   ];
 
+  useEffect(() => {
+    dispatch(getUserCustomer());
+  } ,[dispatch]);
+
   return (
     <>
     <Box m="1.5rem 2.5rem">
@@ -177,9 +206,9 @@ const Customers = () => {
         }}
       >
         <DataGrid
-          loading={isLoading || !data}
+          loading={!customer}
           getRowId={(row) => row._id}
-          rows={data || []}
+          rows={customer || []}
           columns={columns}
         />
       </Box>

@@ -10,12 +10,12 @@ const ProductSchema = new mongoose.Schema(
     price: {
       type: Number,
       required: true,
-      unique: true,
+      unique: false,
     },
     description: {
       type: String,
       required: true,
-      unique: true,
+      unique: false,
     },
     image: {
       type: String,
@@ -24,18 +24,18 @@ const ProductSchema = new mongoose.Schema(
     category: {
       type: String,
       required: true,
-      unique: true,
+      unique: false,
     },
     branch: {
       type: String,
       required: true,
-      unique: true,
+      unique: false,
     },
     rating: Number,
     supply: {
       type: Number,
       required: true,
-      unique: true,
+      unique: false,
     },
   },
   { timestamps: true }

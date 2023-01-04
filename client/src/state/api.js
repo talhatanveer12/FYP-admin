@@ -16,6 +16,7 @@ export const api = createApi({
     "Categorys",
     "Brands",
     "CreateProducts",
+    "Invoices",
   ],
   endpoints: (build) => ({
     getUser: build.query({
@@ -54,6 +55,14 @@ export const api = createApi({
       }),
       providesTags: ["Transactions"],
     }),
+    getInvoices: build.query({
+      query: ({ page, pageSize, sort, search }) => ({
+        url: "client/invoice",
+        method: "GET",
+        params: { page, pageSize, sort, search },
+      }),
+      providesTags: ["Invoices"],
+    }),
     getGeography: build.query({
       query: () => "client/geography",
       providesTags: ["Geography"],
@@ -90,4 +99,5 @@ export const {
   useGetDashboardQuery,
   useGetBrandsQuery,
   useCreateProductsQuery,
+  useGetInvoicesQuery
 } = api;
