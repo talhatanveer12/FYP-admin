@@ -8,10 +8,9 @@ import Brand from "../models/Brand.js";
 import fs from "fs";
 import { promisify } from "util";
 import Invoice from "../models/Invoice.js";
+import Ledger from "../models/Ledger.js";
 
 const unlinkAsync = promisify(fs.unlink);
-
-
 
 export const getProducts = async (req, res) => {
   try {
@@ -64,9 +63,9 @@ export const updateProducts = async (req, res) => {
   //   supply: req.body.stock,
   // });
   const imageDelete = await Product.findById(req.params.id);
-    if (req.file?.filename) {
-      await unlinkAsync(`public/images/${imageDelete?.image}`);
-    }
+  if (req.file?.filename) {
+    await unlinkAsync(`public/images/${imageDelete?.image}`);
+  }
 
   try {
     await Product.findByIdAndUpdate(req.params.id, {
@@ -151,6 +150,33 @@ export const createInvoice = async (req, res) => {
   await Product.findByIdAndUpdate(req.body.products, {
     supply: total,
   });
+
+  const res = await Ledger.find({ userId: req.body.userId });
+  if (!res) {
+    const ledger = new Ledger({
+      userId: req.body.userId,
+      products: {
+        productId: req.body.products,
+        totalAmount: req.body.totalAmount,
+        quantity: req.body.quantity,
+      },
+      total: req.body.totalAmount,
+    });
+
+    await ledger.save();
+  } else {
+    const post = await Ledger.findById(res._id);
+    await post.updateOne({
+      total : res.total + req.body.totalAmount,
+      $push: {
+        products: {
+          productId: req.body.products,
+          totalAmount: req.body.totalAmount,
+          quantity: req.body.quantity,
+        },
+      },
+    });
+  }
 
   const invoice = new Invoice({
     userId: req.body.userId,

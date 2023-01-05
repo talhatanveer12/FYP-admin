@@ -63,6 +63,7 @@ const Product = ({
   const [p_image, setPImage] = useState();
   const [image, setImage] = useState();
   const [p_price, setPrice] = useState(0);
+  const { user } = useSelector((state) => state.Auth);
 
   const result = useGetCategorysQuery();
   const brand = useGetBrandsQuery();
@@ -192,7 +193,7 @@ const Product = ({
           >
             See More
           </Button>
-          <Button
+          {user?.role === "admin" && <><Button
             variant="contained"
             size="small"
             onClick={() => {
@@ -220,7 +221,7 @@ const Product = ({
             }}
           >
             Delete
-          </Button>
+          </Button> </>}
         </CardActions>
         <Collapse
           in={isExpanded}
@@ -418,6 +419,7 @@ const Products = () => {
   const [price, setPrice] = useState(0);
   const dispatch = useDispatch();
   const { product } = useSelector((state) => state.Admin);
+  const { user } = useSelector((state) => state.Auth);
   //const [category, setCategory] = React.useState([]);
   const handleClickOpen = () => {
     setOpen(true);
@@ -465,7 +467,7 @@ const Products = () => {
             title="PRODUCTS"
             subtitle="See your list of products."
           ></Header>
-          <Button
+         {user?.role === "admin" && <Button
             variant="contained"
             color="success"
             size="small"
@@ -473,7 +475,7 @@ const Products = () => {
             onClick={handleClickOpen}
           >
             Add Product
-          </Button>
+          </Button>}
         </Box>
         {product ? (
           <Box
