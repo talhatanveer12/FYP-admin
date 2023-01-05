@@ -35,7 +35,7 @@ import { useEffect } from "react";
 import axios from "axios";
 import axiosInstance, { axiosFileInstance } from "Http-Request/axios-instance";
 import { useDispatch, useSelector } from "react-redux";
-import { getUserProduct } from "store/Admin/adminAction";
+import { getUserBrand, getUserProduct } from "store/Admin/adminAction";
 import Swal from "sweetalert2";
 
 const Product = ({
@@ -48,7 +48,7 @@ const Product = ({
   supply,
   stat,
   productImage,
-  branch
+  branch,
 }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
@@ -78,15 +78,17 @@ const Product = ({
   };
   const submitHandle = async () => {
     const data = new FormData();
-    if(p_image)
-      data.append("image", p_image);
+    if (p_image) data.append("image", p_image);
     data.append("name", p_name);
     data.append("description", p_description);
     data.append("category", category);
     data.append("brands", brands);
     data.append("stock", p_stock);
     data.append("price", p_price);
-    const response = await axiosFileInstance.post(`/client/products/${id}`, data);
+    const response = await axiosFileInstance.post(
+      `/client/products/${id}`,
+      data
+    );
     if (response.status === 200) {
       setOpen(false);
       Swal.fire({
@@ -193,35 +195,39 @@ const Product = ({
           >
             See More
           </Button>
-          {user?.role === "admin" && <><Button
-            variant="contained"
-            size="small"
-            onClick={() => {
-              setData(
-                name,
-                _id,
-                description,
-                price,
-                category,
-                supply,
-                productImage,
-                branch
-              );
-            }}
-          >
-            Edit
-          </Button>
-          <Button
-            variant="contained"
-            color="error"
-            size="small"
-            onClick={() => {
-              //setId(_id);
-              deleteHandle(_id);
-            }}
-          >
-            Delete
-          </Button> </>}
+          {user?.role === "admin" && (
+            <>
+              <Button
+                variant="contained"
+                size="small"
+                onClick={() => {
+                  setData(
+                    name,
+                    _id,
+                    description,
+                    price,
+                    category,
+                    supply,
+                    productImage,
+                    branch
+                  );
+                }}
+              >
+                Edit
+              </Button>
+              <Button
+                variant="contained"
+                color="error"
+                size="small"
+                onClick={() => {
+                  //setId(_id);
+                  deleteHandle(_id);
+                }}
+              >
+                Delete
+              </Button>{" "}
+            </>
+          )}
         </CardActions>
         <Collapse
           in={isExpanded}
@@ -234,9 +240,7 @@ const Product = ({
           <CardContent>
             <Typography>id: {_id}</Typography>
             <Typography>Supply Left: {supply}</Typography>
-            <Typography>
-              branch : {branch}
-            </Typography>
+            <Typography>branch : {branch}</Typography>
             {/* <Typography>
               Yearly Units Sold This Year: {stat.yearlyTotalSoldUnits}
             </Typography> */}
@@ -270,7 +274,9 @@ const Product = ({
                     alt="user"
                     src={
                       image
-                        ? (p_image ? URL.createObjectURL(p_image) : `http://localhost:5001/images/${image}`)
+                        ? p_image
+                          ? URL.createObjectURL(p_image)
+                          : `http://localhost:5001/images/${image}`
                         : "https://static.vecteezy.com/packs/media/vectors/term-bg-1-3d6355ab.jpg"
                     }
                   />
@@ -410,26 +416,75 @@ const Product = ({
 
 const Products = () => {
   const [open, setOpen] = useState(false);
+  const [openBrand, setOpenBrand] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [brands, setBrand] = useState("");
+  const [brandName, setBrandName] = useState("");
   const [category, setCategory] = useState("");
   const [image, setImage] = useState();
   const [stock, setStock] = useState(0);
   const [price, setPrice] = useState(0);
   const dispatch = useDispatch();
-  const { product } = useSelector((state) => state.Admin);
+  const { product, brand } = useSelector((state) => state.Admin);
   const { user } = useSelector((state) => state.Auth);
   //const [category, setCategory] = React.useState([]);
   const handleClickOpen = () => {
     setOpen(true);
   };
 
+  const handleBrandOpen = () => {
+    setOpenBrand(true);
+  };
+
   const handleClose = () => {
     setOpen(false);
   };
 
+  const handleBrandClose = () => {
+    setOpenBrand(false);
+  };
+
+  const submitBrandHandle = async () => {
+    const data = new FormData();
+    data.append("name", brandName);
+    if (brandName.length === 1) {
+      setOpenBrand(false);
+      Swal.fire({
+        text: "Name not Empty",
+        icon: "error",
+      });
+      return;
+    }
+    const response = await axiosInstance.post("client/brand", data);
+    if (response.status === 200) {
+      setOpenBrand(false);
+      Swal.fire({
+        text: "Create Brand Successfully",
+        icon: "success",
+      });
+      dispatch(getUserBrand());
+      setBrandName();
+    }
+  };
+
   const submitHandle = async () => {
+    if (price < 0) {
+      setOpen(false);
+      Swal.fire({
+        text: "Price Greater than Zero",
+        icon: "error",
+      });
+      return;
+    }
+    if (stock < 0) {
+      setOpen(false);
+      Swal.fire({
+        text: "Stock Greater than Zero",
+        icon: "error",
+      });
+      return;
+    }
     const data = new FormData();
     data.append("image", image);
     data.append("name", name);
@@ -438,6 +493,7 @@ const Products = () => {
     data.append("brands", brands);
     data.append("stock", stock);
     data.append("price", price);
+
     const response = await axiosFileInstance.post("client/products", data);
     if (response.status === 200) {
       setOpen(false);
@@ -451,7 +507,12 @@ const Products = () => {
 
   //const { data, isLoading } = useGetProductsQuery();
   const result = useGetCategorysQuery();
-  const brand = useGetBrandsQuery();
+
+  useEffect(() => {
+    dispatch(getUserBrand());
+  }, [dispatch]);
+
+  //const brand = useGetBrandsQuery();
 
   const isNonMobile = useMediaQuery("(min-width: 1000px)");
 
@@ -467,15 +528,28 @@ const Products = () => {
             title="PRODUCTS"
             subtitle="See your list of products."
           ></Header>
-         {user?.role === "admin" && <Button
-            variant="contained"
-            color="success"
-            size="small"
-            sx={{ fontWeight: "bold", height: "45px" }}
-            onClick={handleClickOpen}
-          >
-            Add Product
-          </Button>}
+          {user?.role === "admin" && (
+            <Box>
+              <Button
+                variant="contained"
+                color="success"
+                size="small"
+                sx={{ fontWeight: "bold", height: "45px", marginRight: "5px" }}
+                onClick={handleClickOpen}
+              >
+                Add Product
+              </Button>
+              <Button
+                variant="contained"
+                color="success"
+                size="small"
+                sx={{ fontWeight: "bold", height: "45px" }}
+                onClick={handleBrandOpen}
+              >
+                Add Brand
+              </Button>
+            </Box>
+          )}
         </Box>
         {product ? (
           <Box
@@ -500,7 +574,7 @@ const Products = () => {
                 supply,
                 stat,
                 image,
-                branch
+                branch,
               }) => (
                 <Product
                   key={_id}
@@ -590,6 +664,7 @@ const Products = () => {
                 setStock(e.target.value);
               }}
               type="number"
+              inputProps={{ min: 1 }}
               fullWidth
               variant="standard"
             />
@@ -600,6 +675,7 @@ const Products = () => {
               label="Price per Unit"
               type="number"
               value={price}
+              inputProps={{ min: 1 }}
               onChange={(e) => {
                 setPrice(e.target.value);
               }}
@@ -650,8 +726,8 @@ const Products = () => {
                 <MenuItem value="">
                   <em>None</em>
                 </MenuItem>
-                {brand.data?.length > 0 &&
-                  brand.data.map((item) => {
+                {brand?.length > 0 &&
+                  brand?.map((item) => {
                     return <MenuItem value={item.name}>{item.name}</MenuItem>;
                   })}
               </Select>
@@ -675,6 +751,43 @@ const Products = () => {
               Cancel
             </Button>
             <Button onClick={submitHandle} variant="contained" color="success">
+              Create
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </div>
+
+      <div>
+        <Dialog open={openBrand} onClose={handleBrandClose}>
+          <DialogTitle>Add Brand</DialogTitle>
+          <DialogContent>
+            <TextField
+              autoFocus
+              margin="dense"
+              id="name"
+              label="Name"
+              type="text"
+              fullWidth
+              value={brandName}
+              onChange={(e) => {
+                setBrandName(e.target.value);
+              }}
+              variant="standard"
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={handleBrandClose}
+              variant="contained"
+              color="error"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={submitBrandHandle}
+              variant="contained"
+              color="success"
+            >
               Create
             </Button>
           </DialogActions>

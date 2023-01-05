@@ -14,13 +14,11 @@ import {
   createInvoice,
   getInvoice,
   getLedger,
+  getDashboard,
 } from "../controllers/client.js";
 import multer from "multer";
 
 const router = express.Router();
-
-
-
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -35,18 +33,19 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 router.get("/products", getProducts);
-router.post("/products",upload.single("image"), createProducts);
-router.post("/products/:id",upload.single("image"), updateProducts);
-router.delete("/products/:id",deleteProduct);
+router.post("/products", upload.single("image"), createProducts);
+router.post("/products/:id", upload.single("image"), updateProducts);
+router.delete("/products/:id", deleteProduct);
 router.get("/category", getCategory);
 router.post("/category", postCategory);
 router.get("/brand", getBrand);
 router.post("/brand", postBrand);
-router.get("/invoice",getInvoice);
-router.post("/invoice",createInvoice);
-router.get("/ledger",getLedger);
+router.get("/invoice", getInvoice);
+router.post("/invoice", createInvoice);
+router.get("/ledger", getLedger);
 router.get("/customers", getCustomers);
 router.get("/transactions", getTransactions);
 router.get("/geography", getGeography);
+router.get("/dashboard", getDashboard);
 
 export default router;

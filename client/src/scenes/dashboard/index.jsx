@@ -20,11 +20,24 @@ import BreakdownChart from "components/BreakdownChart";
 import OverviewChart from "components/OverviewChart";
 import { useGetDashboardQuery } from "state/api";
 import StatBox from "components/StatBox";
+import { useEffect } from "react";
+import { getUserDashboard, getUserLedger } from "store/Admin/adminAction";
+import { useDispatch, useSelector } from "react-redux";
+import moment from "moment/moment";
 
 const Dashboard = () => {
   const theme = useTheme();
   const isNonMediumScreens = useMediaQuery("(min-width: 1200px)");
-  const { data, isLoading } = useGetDashboardQuery();
+  // const { data, isLoading } = useGetDashboardQuery();
+  const data = null;
+  const dispatch = useDispatch();
+  const { dashboard, ledger } = useSelector((state) => state.Admin);
+  useEffect(() => {
+    dispatch(getUserDashboard());
+  }, [dispatch]);
+  useEffect(() => {
+    dispatch(getUserLedger());
+  }, [dispatch]);
 
   const columns = [
     {
@@ -41,6 +54,7 @@ const Dashboard = () => {
       field: "createdAt",
       headerName: "CreatedAt",
       flex: 1,
+      renderCell: (params) => moment(params.value).format("DD MMM YYYY"),
     },
     {
       field: "products",
@@ -50,10 +64,10 @@ const Dashboard = () => {
       renderCell: (params) => params.value.length,
     },
     {
-      field: "cost",
+      field: "total",
       headerName: "Cost",
       flex: 1,
-      renderCell: (params) => `$${Number(params.value).toFixed(2)}`,
+      //renderCell: (params) => `$${Number(params.value).toFixed(2)}`,
     },
   ];
 
@@ -91,8 +105,8 @@ const Dashboard = () => {
         {/* ROW 1 */}
         <StatBox
           title="Total Customers"
-          value={data && data.totalCustomers}
-          increase="+14%"
+          value={dashboard?.totalUser}
+          // increase="+14%"
           description="Since last month"
           icon={
             <Email
@@ -102,8 +116,8 @@ const Dashboard = () => {
         />
         <StatBox
           title="Sales Today"
-          value={data && data.todayStats.totalSales}
-          increase="+21%"
+          value={dashboard?.todaySale}
+          // increase="+21%"
           description="Since last month"
           icon={
             <PointOfSale
@@ -122,8 +136,8 @@ const Dashboard = () => {
         </Box>
         <StatBox
           title="Monthly Sales"
-          value={data && data.thisMonthStats.totalSales}
-          increase="+5%"
+          value={dashboard?.monthSale}
+          // increase="+5%"
           description="Since last month"
           icon={
             <PersonAdd
@@ -133,8 +147,8 @@ const Dashboard = () => {
         />
         <StatBox
           title="Yearly Sales"
-          value={data && data.yearlySalesTotal}
-          increase="+43%"
+          value={dashboard?.yearSale}
+          // increase="+43%"
           description="Since last month"
           icon={
             <Traffic
@@ -174,13 +188,13 @@ const Dashboard = () => {
           }}
         >
           <DataGrid
-            loading={isLoading || !data}
+            loading={!ledger}
             getRowId={(row) => row._id}
-            rows={(data && data.transactions) || []}
+            rows={ledger || []}
             columns={columns}
           />
         </Box>
-        <Box
+        {/* <Box
           gridColumn="span 4"
           gridRow="span 3"
           backgroundColor={theme.palette.background.alt}
@@ -199,7 +213,7 @@ const Dashboard = () => {
             Breakdown of real states and information via category for revenue
             made for this year and total sales.
           </Typography>
-        </Box>
+        </Box> */}
       </Box>
     </Box>
   );

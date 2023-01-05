@@ -110,6 +110,58 @@ export const getBrand = async (req, res) => {
   }
 };
 
+export const getDashboard = async (req, res) => {
+  var date = new Date();
+  var date = new Date(date.setDate(date.getDate() - 1));
+  var month = new Date();
+  var month = new Date(month.setDate(month.getMonth() - 1));
+  var year = new Date();
+  var year = new Date(year.setDate(year.getMonth() - 11));
+  const u = await User.find({
+    createdAt: {
+      $gte: new Date(2022, 12, 1),
+      $lt: new Date(2023, 2, 1),
+    },
+    role: "user",
+  });
+  const y = await Invoice.find({
+    createdAt: {
+      $gt: date,
+    },
+  });
+
+  var sum = 0;
+  for (let index = 0; index < y.length; index++) {
+    sum = sum + y[index].totalAmount;
+  }
+
+  const z = await Invoice.find({
+    createdAt: {
+      $gt: month,
+    },
+  });
+  var sum1 = 0;
+  for (let index = 0; index < z.length; index++) {
+    sum1 = sum1 + z[index].totalAmount;
+  }
+
+  const x = await Invoice.find({
+    createdAt: {
+      $gt: year,
+    },
+  });
+  var sum2 = 0;
+  for (let index = 0; index < x.length; index++) {
+    sum2 = sum2 + x[index].totalAmount;
+  }
+  res.status(200).json({
+    totalUser: u.length,
+    todaySale: sum.toFixed(2),
+    monthSale: sum1.toFixed(2),
+    yearSale: sum2.toFixed(2),
+  });
+};
+
 export const postCategory = async (req, res) => {
   const category = new Category({
     name: "Abc",
@@ -161,7 +213,7 @@ export const createInvoice = async (req, res) => {
   });
 
   const resp = await Ledger.find({ userId: req.body.userId });
-  //res.status(200).json(resp); 
+  //res.status(200).json(resp);
   if (!(resp.length > 0)) {
     const ledger = new Ledger({
       userId: req.body.userId,
@@ -177,7 +229,7 @@ export const createInvoice = async (req, res) => {
   } else {
     const post = await Ledger.findById(resp[0]?._id);
     await post.updateOne({
-      total : parseInt(resp[0]?.total) + parseInt(req.body.totalAmount),
+      total: parseInt(resp[0]?.total) + parseInt(req.body.totalAmount),
       $push: {
         products: {
           productId: req.body.products,
