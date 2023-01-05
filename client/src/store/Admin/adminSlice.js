@@ -6,6 +6,7 @@ const initialState = {
   product: null,
   transaction: null,
   invoice: null,
+  ledger: null,
 };
 
 const adminSlice = createSlice({
@@ -27,6 +28,9 @@ const adminSlice = createSlice({
     getInvoice: (state, action) => {
       state.invoice = action.payload;
     },
+    getLedger: (state, action) => {
+        state.ledger = action.payload;
+    },
   },
 });
 
@@ -37,4 +41,5 @@ export const {
   getProduct,
   getTransaction,
   getInvoice,
+  getLedger
 } = adminSlice.actions;

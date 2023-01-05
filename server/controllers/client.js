@@ -143,6 +143,15 @@ export const getInvoice = async (req, res) => {
   }
 };
 
+export const getLedger = async (req, res) => {
+  const ledger = await Ledger.find();
+  try {
+    res.status(200).json(ledger);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
+
 export const createInvoice = async (req, res) => {
   const prod = await Product.findById(req.body.products);
   const total = prod.supply - req.body.quantity;
@@ -151,8 +160,9 @@ export const createInvoice = async (req, res) => {
     supply: total,
   });
 
-  const res = await Ledger.find({ userId: req.body.userId });
-  if (!res) {
+  const resp = await Ledger.find({ userId: req.body.userId });
+  //res.status(200).json(resp); 
+  if (!(resp.length > 0)) {
     const ledger = new Ledger({
       userId: req.body.userId,
       products: {
@@ -165,9 +175,9 @@ export const createInvoice = async (req, res) => {
 
     await ledger.save();
   } else {
-    const post = await Ledger.findById(res._id);
+    const post = await Ledger.findById(resp[0]?._id);
     await post.updateOne({
-      total : res.total + req.body.totalAmount,
+      total : parseInt(resp[0]?.total) + parseInt(req.body.totalAmount),
       $push: {
         products: {
           productId: req.body.products,

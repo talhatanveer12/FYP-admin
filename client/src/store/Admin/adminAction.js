@@ -1,5 +1,5 @@
 import axiosInstance from "../../Http-Request/axios-instance";
-import { getProduct,getAdminUser, getCustomer, getInvoice } from "./adminSlice";
+import { getProduct,getAdminUser, getCustomer, getInvoice, getLedger } from "./adminSlice";
 
 export const getUserProduct = () => async (dispatch) => {
     try {
@@ -39,6 +39,17 @@ export const getUserInvoice = () => async (dispatch) => {
         const res = await axiosInstance.get('/client/invoice');
         if(res.data) {
             dispatch(getInvoice(res.data));
+        }
+    } catch (error) {
+        
+    }
+}
+
+export const getUserLedger = () => async (dispatch) => {
+    try {
+        const res = await axiosInstance.get('/client/ledger');
+        if(res.data) {
+            dispatch(getLedger(res.data));
         }
     } catch (error) {
         

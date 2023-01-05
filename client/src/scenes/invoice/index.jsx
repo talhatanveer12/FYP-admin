@@ -65,10 +65,10 @@ const Invoice = () => {
       });
       return;
     }
-    else if(parseInt(quantity) < 0 || parseInt(quantity) > 11) {
+    else if(parseInt(quantity) < 0 ) {
       setOpen(false);
       Swal.fire({
-        text: "Please Enter Valid Item (item greater than 0 and less than 11)",
+        text: "Please Enter Valid Item (item greater than 0)",
         icon: "error",
       });
       return;
@@ -263,7 +263,7 @@ const Invoice = () => {
               id="name"
               label="No of Item"
               type="number"
-              inputProps={{ min: 1, max: 10 }}
+              inputProps={{ min: 1 }}
               fullWidth
               value={quantity}
               onChange={(e) => {

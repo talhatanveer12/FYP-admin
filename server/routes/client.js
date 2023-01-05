@@ -13,6 +13,7 @@ import {
   deleteProduct,
   createInvoice,
   getInvoice,
+  getLedger,
 } from "../controllers/client.js";
 import multer from "multer";
 
@@ -43,6 +44,7 @@ router.get("/brand", getBrand);
 router.post("/brand", postBrand);
 router.get("/invoice",getInvoice);
 router.post("/invoice",createInvoice);
+router.get("/ledger",getLedger);
 router.get("/customers", getCustomers);
 router.get("/transactions", getTransactions);
 router.get("/geography", getGeography);
