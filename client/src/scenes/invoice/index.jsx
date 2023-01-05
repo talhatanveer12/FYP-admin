@@ -63,27 +63,37 @@ const Invoice = () => {
         text: "Please Enter Valid Item (i.e item not greater than total product stock)",
         icon: "error",
       });
+      return;
     }
-    const Total = parseInt(quantity) * getProduct[0]?.price
-    const data = new FormData();
-    data.append("quantity", quantity);
-    data.append("totalAmount", Total);
-    data.append("userId", userId);
-    data.append("products", products);
-    const response = await axiosInstance.post(`/client/invoice`, data);
-    if (response.status === 200) {
+    else if(parseInt(quantity) < 0 || parseInt(quantity) > 11) {
       setOpen(false);
       Swal.fire({
-        text: "Create Invoice Successfully",
-        icon: "success",
+        text: "Please Enter Valid Item (item greater than 0 and less than 11)",
+        icon: "error",
       });
-      dispatch(getUserInvoice());
-      setQuantity();
-      setUserId();
-      setProducts();
+      return;
     }
-
-    console.log(getProduct[0]?.supply,"rrrr", parseInt(quantity));
+    else {
+      const Total = parseInt(quantity) * getProduct[0]?.price
+      const data = new FormData();
+      data.append("quantity", quantity);
+      data.append("totalAmount", Total);
+      data.append("userId", userId);
+      data.append("products", products);
+      const response = await axiosInstance.post(`/client/invoice`, data);
+      if (response.status === 200) {
+        setOpen(false);
+        Swal.fire({
+          text: "Create Invoice Successfully",
+          icon: "success",
+        });
+        dispatch(getUserInvoice());
+        setQuantity();
+        setUserId();
+        setProducts();
+      }
+    }
+    
 
   };
 
@@ -195,7 +205,7 @@ const Invoice = () => {
     </Box>
     <div>
         <Dialog open={open} onClose={handleClose}>
-          <DialogTitle>Add Product</DialogTitle>
+          <DialogTitle>Add Invoice</DialogTitle>
           <DialogContent>
             <FormControl variant="standard" fullWidth sx={{ mt: "2px" }}>
               <InputLabel id="demo-simple-select-standard-label">
@@ -253,6 +263,7 @@ const Invoice = () => {
               id="name"
               label="No of Item"
               type="number"
+              inputProps={{ min: 1, max: 10 }}
               fullWidth
               value={quantity}
               onChange={(e) => {

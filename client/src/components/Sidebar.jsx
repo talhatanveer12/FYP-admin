@@ -32,36 +32,44 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import FlexBetween from "./FlexBetween";
 import profileImage from "assets/profile.jpeg";
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 
 const navItems = [
   {
     text: "Dashboard",
     icon: <HomeOutlined />,
+    type: "all",
   },
   {
     text: "Client Facing",
     icon: null,
+    type: "all",
   },
   {
     text: "Products",
     icon: <ShoppingCartOutlined />,
+    type: "all",
   },
   {
     text: "Customers",
     icon: <Groups2Outlined />,
+    type: "admin",
   },
   {
     text: "Transactions",
     icon: <ReceiptLongOutlined />,
+    type: "admin",
   },
   {
     text: "Ledger",
     icon: <ReceiptLongOutlined />,
+    type: "accountant",
   },
   {
     text: "Invoice",
     icon: <ReceiptLongOutlined />,
+    type: "accountant",
   },
   // {
   //   text: "Geography",
@@ -70,34 +78,42 @@ const navItems = [
   {
     text: "Sales",
     icon: null,
+    type: "sale_manager",
   },
   {
     text: "Overview",
     icon: <PointOfSaleOutlined />,
+    type: "sale_manager",
   },
   {
     text: "Daily",
     icon: <TodayOutlined />,
+    type: "sale_manager",
   },
   {
     text: "Monthly",
     icon: <CalendarMonthOutlined />,
+    type: "sale_manager",
   },
   {
     text: "Breakdown",
     icon: <PieChartOutlined />,
+    type: "sale_manager",
   },
   {
     text: "Management",
     icon: null,
+    type: "admin",
   },
   {
     text: "Admin",
     icon: <AdminPanelSettingsOutlined />,
+    type: "admin",
   },
   {
     text: "Performance",
     icon: <TrendingUpOutlined />,
+    type: "admin",
   },
 ];
 
@@ -113,6 +129,7 @@ const Sidebar = ({
   const navigate = useNavigate();
   const theme = useTheme();
   const { t } = useTranslation();
+  const role = useSelector((state) => state.Auth);
 
   useEffect(() => {
     setActive(pathname.substring(1));
@@ -153,17 +170,23 @@ const Sidebar = ({
               </FlexBetween>
             </Box>
             <List>
-              {navItems.map(({ text, icon }) => {
+              {navItems.map(({ text, icon, type }) => {
                 if (!icon) {
-                  return (
-                    <Typography key={text} sx={{ m: "2.25rem 0 1rem 3rem" }}>
-                      {text}
-                    </Typography>
-                  );
+                    return (
+                      <>
+                      {(type === role?.user?.role || type === "all") &&
+                      <Typography key={text} sx={{ m: "2.25rem 0 1rem 3rem" }}>
+                        {text}
+                      </Typography>
+                      }
+                      </>
+                    );
                 }
                 const lcText = text.toLowerCase();
 
                 return (
+                  <>
+                  {(type === role?.user?.role || type === "all") &&
                   <ListItem key={text} disablePadding>
                     <ListItemButton
                       onClick={() => {
@@ -198,6 +221,8 @@ const Sidebar = ({
                       )}
                     </ListItemButton>
                   </ListItem>
+                  }
+                  </>
                 );
               })}
             </List>
